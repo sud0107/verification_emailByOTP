@@ -19,18 +19,21 @@ router.post("/signup", (req, res) => {
             if(result.length) {
                 res.status(404).json({ message: "User already exist !!" })
             } else {
-               
-                    const newUser = new User({
-                        name,
-                        email,
-                        password,
-                        dateOfBirth
-                    });
-
-                    newUser.save().then(result => {
-                        res.status(202).json({ message: "Signup Successful", data: result })
-                    }).catch(err => {
-                        res.status(404).json({ message: "An error occured while saving user account !!" })
+                    bcrypt.genSalt(12, (err, salt) => {
+                        if(err) throw err;
+                        bcrypt.hash(password, salt, (err, hash) => {
+                            if(err) throw err;
+                            User({
+                                name: name,
+                                email: email,
+                                password: hash,
+                                dateOfBirth: dateOfBirth,
+                            }).save().then(result => {
+                                res.status(202).json({ message: "Signup Successful", data: result })
+                            }).catch(err => {
+                                res.status(404).json({ message: "An error occured while saving user account !!" })
+                            })
+                        })
                     })
 
                
@@ -56,8 +59,8 @@ router.post("/login", (req, res) => {
         User.find({email})
         .then(data => {
             if(data.length) {
-                const previousPassword = data[0].password;
-                bcrypt.compare(password, previousPassword).then(result => {
+                // const hash = data[0].password;
+                bcrypt.compare(req.body.password, password).then(result => {
                     if(result) {
                         res.status(202).json({ message: "Signin Successful !!" })
                     } else {
