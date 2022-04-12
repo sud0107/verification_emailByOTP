@@ -13,6 +13,8 @@ app.get("/", (req, res) =>{
     res.send("Hello");
 })
 
+app.use("/user", UserRouter);
+
 app.listen(port, () => {
     console.log(`Server is running on ${port}`);
 })
